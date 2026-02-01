@@ -1,0 +1,15 @@
+# IDE
+.idea/
+
+# Microsserviços
+/ms-login/
+/ms-usuario/
+/ms-feedback/
+
+#Envs
+.env
+.env.local
+.env.dev
+.env.prod
+.env.test
+.env.staging
