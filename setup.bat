@@ -1,10 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Parar se ocorrer qualquer erro
-set "ERRORLEVEL_CHECK=0"
+echo ============================================
+echo Setup Ambiente Hackathon TC5
+echo ============================================
 
-:: Detectar se docker-compose existe (com ou sem hífen)
+:: Detectar docker-compose (v1) ou docker compose (v2)
 where docker-compose >nul 2>nul
 if %ERRORLEVEL%==0 (
     set "DOCKER_COMPOSE_COMMAND=docker-compose"
@@ -13,42 +14,53 @@ if %ERRORLEVEL%==0 (
     if %ERRORLEVEL%==0 (
         set "DOCKER_COMPOSE_COMMAND=docker compose"
     ) else (
-        echo Erro: docker-compose não encontrado.
+        echo Erro: docker-compose nao encontrado.
         exit /b 1
     )
 )
 
-:: URLs dos repositórios
-set "REPO_LOGIN=https://github.com/TC4-FIAP-Arquitetura-Dev-Java/ms-login"
-set "REPO_USUARIO=https://github.com/TC4-FIAP-Arquitetura-Dev-Java/ms-usuario"
-set "REPO_FEEDBACK=https://github.com/TC4-FIAP-Arquitetura-Dev-Java/ms-feedback"
-set "REPO_COLLETIONS=https://github.com/TC4-FIAP-Arquitetura-Dev-Java/collections"
+echo Usando: %DOCKER_COMPOSE_COMMAND%
 
-:: Clonar se os diretórios não existirem
-if not exist "ms-login" (
-    git clone %REPO_LOGIN%
+:: URLs dos repositórios
+set "REPO_AGENDAMENTO=https://github.com/Hackathon-Fiap-TC5/ms-agendamento"
+set "REPO_COMPARECIMENTO=https://github.com/Hackathon-Fiap-TC5/ms-comparecimento"
+set "REPO_COLLECTIONS=https://github.com/Hackathon-Fiap-TC5/collections"
+
+:: Clonar repositórios se não existirem
+if not exist "ms-agendamento" (
+    echo Clonando ms-agendamento...
+    git clone %REPO_AGENDAMENTO% || exit /b 1
 )
-if not exist "ms-usuario" (
-    git clone %REPO_USUARIO%
+
+if not exist "ms-comparecimento" (
+    echo Clonando ms-comparecimento...
+    git clone %REPO_COMPARECIMENTO% || exit /b 1
 )
-if not exist "ms-feedback" (
-    git clone %REPO_FEEDBACK%
-)
+
 if not exist "collections" (
-    git clone %REPO_COLLETIONS%
+    echo Clonando collections...
+    git clone %REPO_COLLECTIONS% || exit /b 1
 )
 
 :: URL do docker-compose.yaml
-set "GIST_RAW_URL=https://gist.githubusercontent.com/Ghustavo516/2681a752b3c718d50e6985751983e867/raw/58c1c281b2177c64be78481d8380882f2e9e1aad/docker-compose-tc4.yml"
+set "GIST_RAW_URL=https://gist.githubusercontent.com/Ghustavo516/74203204973a7cd391dbde607278c083/raw/17222ac445bbc50ed389a0ef452b27a890fd83d0/docker-compose-tc5.yml"
 
-:: Verifica se curl está disponível
+:: Verificar se curl existe
 where curl >nul 2>nul
 if %ERRORLEVEL%==0 (
-    curl -fsSL %GIST_RAW_URL% -o docker-compose.yaml
+    echo Baixando docker-compose.yaml...
+    curl -fsSL %GIST_RAW_URL% -o docker-compose.yaml || exit /b 1
 ) else (
-    echo Erro: curl não está instalado.
+    echo Erro: curl nao esta instalado.
     exit /b 1
 )
 
 :: Subir containers
-%DOCKER_COMPOSE_COMMAND% up -d
+echo Subindo containers...
+%DOCKER_COMPOSE_COMMAND% up -d --build || exit /b 1
+
+echo ============================================
+echo Ambiente iniciado com sucesso!
+echo ============================================
+
+pause

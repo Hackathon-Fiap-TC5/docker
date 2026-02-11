@@ -1,100 +1,114 @@
 services:
 
-  ms-usuario:
-    build: ./ms-usuario
+  ms-agendamento:
+    build: ./ms-agendamento
     restart: always
     ports:
       - "9083:9083"
     environment:
-      SPRING_PROFILES_ACTIVE: local
-      SPRING_DATASOURCE_URL: jdbc:mysql://db-usuarios:3306/usuarios?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: usuarios
+      SPRING_PROFILES_ACTIVE: prod
+      PORT: 9083
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-agendamento:3306/agendamento?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: agendamento
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
-      JWT_SECRET: "Q2hhdEdQdHNhVmFsaWRhQmFzZTY0S2V5QWNjZXNzMTIzNDU2Nzg5MDEy"
-      USUARIO_PORT: 9083
+
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: admin
+      RABBIT_PASSWORD: admin123
+
     depends_on:
-      db-usuarios:
+      db-agendamento:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks: [local-network]
 
-  db-usuarios:
+  db-agendamento:
     image: mysql:8.0
     restart: always
     ports:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: usuarios
-      MYSQL_USER: usuarios
+      MYSQL_DATABASE: agendamento
+      MYSQL_USER: agendamento
       MYSQL_PASSWORD: admin
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uusuarios", "-padmin"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uagendamento", "-padmin"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - ms-usuario-data:/var/lib/mysql
+      - ms-agendamento-data:/var/lib/mysql
     networks: [local-network]
 
-  ms-feedback:
-    build: ./ms-feedback
+  ms-comparecimento:
+    build: ./ms-comparecimento
     restart: always
     ports:
       - "9084:9084"
     environment:
-      SPRING_PROFILES_ACTIVE: local
-      SPRING_DATASOURCE_URL: jdbc:mysql://db-feedback:3306/feedback?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: feedback
+      SPRING_PROFILES_ACTIVE: prod
+      PORT: 9084
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-comparecimento:3306/comparecimento?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: comparecimento
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
-      FEEDBACK_PORT: 9084
-      JWT_SECRET: "Q2hhdEdQdHNhVmFsaWRhQmFzZTY0S2V5QWNjZXNzMTIzNDU2Nzg5MDEy"
+
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: admin
+      RABBIT_PASSWORD: admin123
+
     depends_on:
-      db-feedback:
+      db-comparecimento:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks: [local-network]
 
-  db-feedback:
+  db-comparecimento:
     image: mysql:8.0
     restart: always
     ports:
       - "3308:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: feedback
-      MYSQL_USER: feedback
+      MYSQL_DATABASE: comparecimento
+      MYSQL_USER: comparecimento
       MYSQL_PASSWORD: admin
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ufeedback", "-padmin"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ucomparecimento", "-padmin"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - ms-feedback-data:/var/lib/mysql
+      - ms-comparecimento-data:/var/lib/mysql
     networks: [local-network]
 
-  ms-login:
-    build: ./ms-login
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
     restart: always
     ports:
-      - "9082:9082"
-    depends_on:
-      ms-usuario:
-        condition: service_started
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      LOGIN_PORT: 9082
-      USUARIO_HOST: http://ms-usuario:9083/ms-usuario/v1/
-      JWT_ACCESS_TOKEN: "Q2hhdEdQdHNhVmFsaWRhQmFzZTY0S2V5QWNjZXNzMTIzNDU2Nzg5MDEy"
-      JWT_REFRESH_TOKEN: "UmVmcmVzaFRva2VuU2VjdXJlQmFzZTY0S2V5VGVzdDEyMzQ1Njc4OTA="
-    networks: [local-network]
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - local-network
 
 volumes:
-  ms-usuario-data:
-  ms-feedback-data:
+  ms-agendamento-data:
+  ms-comparecimento-data:
+  rabbitmq_data:
 
 networks:
   local-network:
