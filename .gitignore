@@ -2,9 +2,9 @@
 .idea/
 
 # Microsserviços
-/ms-login/
-/ms-usuario/
-/ms-feedback/
+/ms-agendamento/
+/ms-comparecimento/
+/collections/
 
 #Envs
 .env

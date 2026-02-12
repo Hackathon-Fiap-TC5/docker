@@ -5,6 +5,27 @@ echo ============================================
 echo Setup Ambiente Hackathon TC5
 echo ============================================
 
+:: 🔥 REMOVER PASTAS EXISTENTES
+echo Removendo pastas existentes (se houver)...
+
+if exist "ms-agendamento" (
+    echo - Removendo ms-agendamento
+    rmdir /s /q ms-agendamento
+)
+
+if exist "ms-comparecimento" (
+    echo - Removendo ms-comparecimento
+    rmdir /s /q ms-comparecimento
+)
+
+if exist "collections" (
+    echo - Removendo collections
+    rmdir /s /q collections
+)
+
+echo Pastas removidas com sucesso.
+echo.
+
 :: Detectar docker-compose (v1) ou docker compose (v2)
 where docker-compose >nul 2>nul
 if %ERRORLEVEL%==0 (

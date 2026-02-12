@@ -1,0 +1,115 @@
+services:
+
+  ms-agendamento:
+    build: ./ms-agendamento
+    restart: always
+    ports:
+      - "9083:9083"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      PORT: 9083
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-agendamento:3306/agendamento?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: agendamento
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: admin
+      RABBIT_PASSWORD: admin123
+
+    depends_on:
+      db-agendamento:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    networks: [local-network]
+
+  db-agendamento:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: agendamento
+      MYSQL_USER: agendamento
+      MYSQL_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uagendamento", "-padmin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ms-agendamento-data:/var/lib/mysql
+    networks: [local-network]
+
+  ms-comparecimento:
+    build: ./ms-comparecimento
+    restart: always
+    ports:
+      - "9084:9084"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      PORT: 9084
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-comparecimento:3306/comparecimento?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: comparecimento
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      RABBIT_USERNAME: admin
+      RABBIT_PASSWORD: admin123
+
+    depends_on:
+      db-comparecimento:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    networks: [local-network]
+
+  db-comparecimento:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: comparecimento
+      MYSQL_USER: comparecimento
+      MYSQL_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ucomparecimento", "-padmin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ms-comparecimento-data:/var/lib/mysql
+    networks: [local-network]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - local-network
+
+volumes:
+  ms-agendamento-data:
+  ms-comparecimento-data:
+  rabbitmq_data:
+
+networks:
+  local-network:
+    driver: bridge
