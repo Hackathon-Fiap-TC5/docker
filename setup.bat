@@ -18,11 +18,6 @@ if exist "ms-comparecimento" (
     rmdir /s /q ms-comparecimento
 )
 
-if exist "collections" (
-    echo - Removendo collections
-    rmdir /s /q collections
-)
-
 echo Pastas removidas com sucesso.
 echo.
 
@@ -45,7 +40,6 @@ echo Usando: %DOCKER_COMPOSE_COMMAND%
 :: URLs dos repositórios
 set "REPO_AGENDAMENTO=https://github.com/Hackathon-Fiap-TC5/ms-agendamento"
 set "REPO_COMPARECIMENTO=https://github.com/Hackathon-Fiap-TC5/ms-comparecimento"
-set "REPO_COLLECTIONS=https://github.com/Hackathon-Fiap-TC5/collections"
 
 :: Clonar repositórios se não existirem
 if not exist "ms-agendamento" (
@@ -56,11 +50,6 @@ if not exist "ms-agendamento" (
 if not exist "ms-comparecimento" (
     echo Clonando ms-comparecimento...
     git clone %REPO_COMPARECIMENTO% || exit /b 1
-)
-
-if not exist "collections" (
-    echo Clonando collections...
-    git clone %REPO_COLLECTIONS% || exit /b 1
 )
 
 :: URL do docker-compose.yaml
