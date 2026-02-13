@@ -64,8 +64,6 @@ services:
       RABBIT_USERNAME: admin
       RABBIT_PASSWORD: admin123
 
-      URL_AGENDAMENTO_FILA_VIVA: http://localhost:9083/ms-agendamento/v1/fila-viva
-
     depends_on:
       db-comparecimento:
         condition: service_healthy
